@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0c0f;
+    --bg2: #0f1217;
+    --surface: #141820;
+    --border: rgba(180,200,220,0.1);
+    --accent: #4a9eff;
+    --accent2: #7ecfaa;
+    --text-main: #d0d8e8;
+    --text-muted: #6a7a90;
+    --text-dim: #3a4a5a;
+    --red: #c94040;
+    --amber: #c8952a;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text-main);
+    font-family: 'Crimson Pro', Georgia, serif;
+    font-size: 19px;
+    line-height: 1.85;
+    min-height: 100vh;
+  }
+  .novel-shell { max-width: 820px; margin: 0 auto; padding: 0 0 80px; }
+
+  .masthead {
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+  }
+  .masthead::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent2) 30%, var(--accent) 70%, transparent);
+    opacity: 0.4;
+  }
+  .site-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+  .hud-status {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--accent2);
+    letter-spacing: 0.15em;
+    display: flex;
+    gap: 18px;
+  }
+  .hud-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+    margin-right: 5px;
+    animation: pulse 2s infinite;
+    vertical-align: middle;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+
+  .hero {
+    padding: 60px 40px 48px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.35em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+  .hero-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(52px, 10vw, 88px);
+    font-weight: 700;
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    color: #f0f4ff;
+    margin-bottom: 8px;
+  }
+  .hero-subtitle {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-bottom: 32px;
+  }
+  .meta-row { display: flex; gap: 28px; align-items: center; flex-wrap: wrap; }
+  .meta-item {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+  }
+  .meta-item span { color: var(--text-muted); }
+  .tag {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border: 1px solid rgba(74,158,255,0.3);
+    color: var(--accent);
+    border-radius: 2px;
+  }
+
+  .chapter-nav {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    padding: 0 40px;
+    background: var(--bg2);
+    overflow-x: auto;
+  }
+  .ch-tab {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 16px 22px;
+    cursor: pointer;
+    color: var(--text-dim);
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+    white-space: nowrap;
+  }
+  .ch-tab:hover { color: var(--text-muted); }
+  .ch-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .ch-tab.note-tab.active { color: var(--accent2); border-bottom-color: var(--accent2); }
+
+  .chapter { display: none; padding: 52px 40px 40px; }
+  .chapter.active { display: block; }
+
+  .ch-header { margin-bottom: 44px; padding-bottom: 28px; border-bottom: 1px solid var(--border); }
+  .ch-number {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .ch-number.green { color: var(--accent2); }
+  .ch-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 38px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: #f0f4ff;
+    line-height: 1.05;
+  }
+
+  .prose p { margin-bottom: 1.6em; color: var(--text-main); font-size: 19px; font-weight: 300; }
+  .prose p:first-child::first-letter {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 4.5em;
+    font-weight: 700;
+    float: left;
+    line-height: 0.8;
+    margin: 8px 10px 0 0;
+    color: var(--accent);
+  }
+  .prose em { font-style: italic; color: #bbc8dc; }
+
+  .scene-break {
+    text-align: center;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.4em;
+    margin: 2.8em 0;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .scene-break::before, .scene-break::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  .comms-block {
+    background: var(--surface);
+    border-left: 2px solid var(--amber);
+    padding: 16px 20px;
+    margin: 2em 0;
+    border-radius: 0 4px 4px 0;
+  }
+  .comms-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .comms-block p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: #d8b870;
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  .hud-callout {
+    background: rgba(74,158,255,0.05);
+    border: 1px solid rgba(74,158,255,0.18);
+    border-radius: 3px;
+    padding: 14px 18px;
+    margin: 2em 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.8;
+    letter-spacing: 0.04em;
+  }
+  .hud-callout .hud-row {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(74,158,255,0.1);
+    padding: 4px 0;
+  }
+  .hud-callout .hud-row:last-child { border-bottom: none; }
+  .hud-callout .hud-key { color: rgba(74,158,255,0.5); }
+
+  .death-block {
+    background: rgba(201,64,64,0.06);
+    border: 1px solid rgba(201,64,64,0.2);
+    border-radius: 3px;
+    padding: 18px 22px;
+    margin: 2em 0;
+    font-family: 'Crimson Pro', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: #d08080;
+    line-height: 1.9;
+  }
+
+  .personnel-file {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 2px solid var(--accent2);
+    border-radius: 3px;
+    padding: 22px 24px;
+    margin: 2.4em 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    line-height: 2;
+  }
+  .personnel-file .pf-header {
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 10px;
+  }
+  .personnel-file .pf-row { display: flex; gap: 16px; color: var(--text-muted); }
+  .personnel-file .pf-key { color: var(--text-dim); min-width: 120px; }
+  .personnel-file .pf-note {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-style: italic;
+    color: var(--amber);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+  }
+
+  .author-note-body { font-weight: 300; color: var(--text-main); font-size: 19px; }
+  .author-note-body p { margin-bottom: 1.5em; }
+  .author-note-body p:last-child { margin-bottom: 0; }
+  .author-note-body em { font-style: italic; color: #bbc8dc; }
+
+  .signature-block {
+    margin-top: 44px;
+    padding-top: 28px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .sig-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #f0f4ff;
+    line-height: 1.1;
+  }
+  .sig-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    margin-top: 5px;
+  }
+  .sig-detail {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-align: right;
+    line-height: 2;
+  }
+  .sig-detail span { color: var(--accent2); }
+
+  .bottom-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 40px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+  .nav-btn {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: none;
+    border: 1px solid var(--border);
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border-radius: 2px;
+  }
+  .nav-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .nav-btn:disabled { opacity: 0.3; cursor: default; }
+  .nav-btn.primary { border-color: rgba(74,158,255,0.4); color: var(--accent); }
+  .nav-btn.green:hover { border-color: var(--accent2); color: var(--accent2); }
+  .reading-progress {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+  }
+
+  @media (max-width: 600px) {
+    .masthead, .hero, .chapter, .bottom-nav { padding-left: 20px; padding-right: 20px; }
+    .chapter-nav { padding: 0 10px; }
+    .hud-status { display: none; }
+    .hero-title { font-size: 52px; }
+    .ch-title { font-size: 28px; }
+    .prose p { font-size: 17px; }
+    .sig-detail { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="novel-shell">
+
+  <div class="masthead">
+    <div class="site-label">ESC // CLASSIFIED ARCHIVE // SERIES A-7</div>
+    <div class="hud-status">
+      <span><span class="hud-dot"></span>SIGNAL STABLE</span>
+      <span>MARS OPS</span>
+    </div>
+  </div>
+
+  <div class="hero">
+    <div class="hero-label">// Autobiography of a Soldier //</div>
+    <div class="hero-title">THE<br>ODST</div>
+    <div class="hero-subtitle">Ronan Kade — Orbital Drop Shock Trooper</div>
+    <div class="meta-row">
+      <div class="meta-item">Year: <span>3020 CE</span></div>
+      <div class="meta-item">Theater: <span>Mars Occupation</span></div>
+      <div class="meta-item">Chapters: <span>2 of ???</span></div>
+      <div class="tag">Military Sci-Fi</div>
+    </div>
+  </div>
+
+  <div class="chapter-nav">
+    <div class="ch-tab active" onclick="switchChapter('ch0')">Author's Note</div>
+    <div class="ch-tab" onclick="switchChapter('ch1')">Chapter 1 — The Entry</div>
+    <div class="ch-tab" onclick="switchChapter('ch2')">Chapter 2 — Darro Fenn</div>
+  </div>
+
+  <!-- Author's Note -->
+  <div class="chapter active" id="ch0">
+    <div class="ch-header">
+      <div class="ch-number green">// Author's Note //</div>
+      <div class="ch-title">A Word Before You Begin</div>
+    </div>
+    <div class="author-note-body">
+      <p>My name is Israel Bekele, and <em>The ODST</em> is my first book.</p>
+      <p>I wrote this because I wanted to put something I actually made out into the world. Not an idea sitting in my head, not a story I kept to myself — something finished, something real, something that other people could read. That felt important to me. It still does.</p>
+      <p>So if you're here, thank you. You're the reason it was worth doing.</p>
+    </div>
+    <div class="signature-block">
+      <div>
+        <div class="sig-name">Israel Bekele</div>
+        <div class="sig-label">Author // The ODST</div>
+      </div>
+      <div class="sig-detail">
+        FIRST EDITION<br>
+        SERIES // THE ODST<br>
+        STATUS // <span>ONGOING</span>
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-btn" disabled>← Back</button>
+      <div class="reading-progress">NOTE // START</div>
+      <button class="nav-btn primary" onclick="switchChapter('ch1')">Chapter 1 →</button>
+    </div>
+  </div>
+
+  <!-- Chapter 1 -->
+  <div class="chapter" id="ch1">
+    <div class="ch-header">
+      <div class="ch-number">// Chapter 01 //</div>
+      <div class="ch-title">The Entry</div>
+    </div>
+    <div class="prose">
+      <p>I was an Orbital Drop Shock Trooper for the Earth Space Command. Most soldiers fight for ground. We fought for the seconds before the enemy knew we were there. The rest — the politics, the rubble, the body counts — was never our problem.</p>
+      <p>By 3020, Mars was green. Rivers cut through valleys that used to be dust, and forests clung to domes that had once been the only places humans could breathe. From orbit, it looked alive. From the ground, it was still unfinished. The atmosphere held in some regions and vanished in others, torn open by old terraforming failures and newer acts of sabotage. Step into the wrong zone without a suit, and Mars would kill you just as fast as it always had.</p>
+      <p>Earth called the fighting a compliance operation. Mars called it an occupation. I called it my job.</p>
+      <p>The Drop Infantry existed for places like this. We were trained to hit targets that couldn't be approached cleanly — cities with air one street over and a vacuum the next, battlefields where a broken seal mattered more than enemy fire. We dropped fast, secured pressure-stable zones, and moved before the planet remembered it hated us.</p>
+      <div class="scene-break">ESV MERIDIAN // PRE-ENTRY // T-MINUS 04:12</div>
+      <p>The memory that stays with me begins aboard the ESV Meridian, hours before entry. The ship vibrated as it dropped out of coronal shift, holding above a world that could cradle you — or tear the air from your lungs. Around me, troopers sat locked into harnesses, helmets on. No one spoke.</p>
+      <p>My pod waited in the launch bay — tall, narrow, painted with stripes worn thin by heat and reentry. I called her Diana. She had kept me safe for twenty confirmed jumps until now. I just hoped she didn't become my coffin.</p>
+      <div class="hud-callout">
+        <div class="hud-row"><span class="hud-key">SEAL INTEGRITY</span><span style="color:#7ecfaa">● NOMINAL</span></div>
+        <div class="hud-row"><span class="hud-key">O₂ RESERVES</span><span style="color:#7ecfaa">● 100%</span></div>
+        <div class="hud-row"><span class="hud-key">WEAPON CHARGE</span><span style="color:#7ecfaa">● FULL</span></div>
+        <div class="hud-row"><span class="hud-key">POD DESIGNATION</span><span>DIANA // DROP #21</span></div>
+      </div>
+      <p>I ran my checks again. Seal integrity. Oxygen reserves. Weapon charge. All green. My heads-up display flickered to life as I strapped on my helmet, and the sound of chatter on the comms filled my ears.</p>
+      <p>When the light above my pod turned green, I stepped inside and let the clamps close around my armor. The hatch sealed with a final, hollow sound.</p>
+      <div class="scene-break">ENTRY // UPPER ATMOSPHERE</div>
+      <p>The pod shuddered as the clamps released me from the launch bay. For a moment, there was nothing but the hum of the pod and the faint vibration of the Meridian slipping away above me. Outside the reinforced viewport, Mars rotated slowly beneath a thin haze of green, stitched with rivers and forests. Some of the planet looked inviting. Other patches — dark, dead zones — would kill you instantly if your suit failed.</p>
+      <p>The first jolt hit as we entered the upper atmosphere. Heat licked the pod's hull, warning lights flickered, and the thin green clouds outside turned to streaks of fire. Adrenaline surged through me.</p>
+      <div class="comms-block">
+        <div class="comms-label">COMMS // SGT. RAYES // ALPHA CHANNEL</div>
+        <p>"SHIT! MY POD'S BREAKING UP—"</p>
+      </div>
+      <p>Static. Then nothing.</p>
+      <p>I looked to my right. What was left of his pod was already tumbling, trailing fire through the green haze like a spent shell casing. I logged it the way we were trained to. Noted. Filed. Moved on. You grieve after the mission, if you make it that far.</p>
+      <p>The pod shook violently as it pierced deeper into the atmosphere. Mars' patchy air didn't behave like Earth's. Some zones were dense, giving a strange lift; others were nearly vacuum. The onboard systems compensated, but every meter felt like a gamble. I focused on breathing, on the HUD, on Diana, and the countdown ticking in my helmet.</p>
+      <div class="hud-callout">
+        <div class="hud-row"><span class="hud-key">ALT</span><span>300m — HEAT SENSORS CRITICAL</span></div>
+        <div class="hud-row"><span class="hud-key">ALT</span><span>200m — ALL SYSTEMS TENSIONED</span></div>
+        <div class="hud-row"><span class="hud-key">ALT</span><span>100m — RETROTHRUSTER STANDBY</span></div>
+      </div>
+      <p>One hundred. I stopped thinking. There was only the pod. The harness. The drop.</p>
+      <p>Retrothrusters. The deceleration hit like a vehicle impact — everything forward, then everything back. My restraints held. Barely.</p>
+      <p>The hull groaned under the strain. Outside, jagged shadows of the Martian landscape appeared — domed settlements, river canyons, fractured crust, and pockets of void where air had not taken hold. Landing here was a calculation, not a hope.</p>
+      <p>Diana hit the ground with a bone-rattling crunch, retrojets flaring to stabilize. My helmet slammed forward against the hatch, then back. The HUD blinked red for a second, then green. I exhaled without thinking.</p>
+      <p>The hatch blew. Pressure-stable air — cold and thin, laced with the iron smell of Martian dust — hit me before I'd even cleared the frame. My squad was already fanning out, weapons up. Vega had his barrel pointed at the dead zone perimeter before his boots touched ground. Six drops together. He knew the geometry of dying out here better than most.</p>
+      <p>The new guy didn't.</p>
+      <p>He yanked off his helmet, gasping.</p>
+      <p>"I… I just need a second," he stammered, voice shaking. "Gotta… catch my breath."</p>
+      <p>Vega snapped, "What the hell are you doing? Put your helmet back on — now!"</p>
+      <p>The rookie tried to step forward, chest heaving, teeth clenched. "C'mon… I can handle it — just a second —"</p>
+      <p>He stepped wrong.</p>
+      <div class="death-block">
+        There's no warning when you hit a dead zone without a helmet. No time to react. No chance to fix it.<br><br>
+        You don't choke. You don't scream.<br><br>
+        You just die.
+      </div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-btn green" onclick="switchChapter('ch0')">← Author's Note</button>
+      <div class="reading-progress">CH 1 / 2</div>
+      <button class="nav-btn primary" onclick="switchChapter('ch2')">Chapter 2 →</button>
+    </div>
+  </div>
+
+  <!-- Chapter 2 -->
+  <div class="chapter" id="ch2">
+    <div class="ch-header">
+      <div class="ch-number">// Chapter 02 //</div>
+      <div class="ch-title">Darro Fenn</div>
+    </div>
+    <div class="prose">
+      <p>I knew his name before I knew his face.</p>
+      <p>That's how it works in the Drop Infantry. You get a manifest update, a personnel file, a set of numbers — height, weight, years of service, specialisation — and somewhere in that column of data is a name that belongs to someone you haven't met yet. Someone who is, as of that moment, your responsibility. You don't choose them. You don't interview them. They just appear in your squad roster one morning like a new line item in a budget, and from that point forward their survival is partially your problem.</p>
+      <div class="personnel-file">
+        <div class="pf-header">ESC PERSONNEL FILE // RESTRICTED ACCESS</div>
+        <div class="pf-row"><span class="pf-key">NAME</span><span>Fenn, Darro</span></div>
+        <div class="pf-row"><span class="pf-key">AGE</span><span>22</span></div>
+        <div class="pf-row"><span class="pf-key">SPECIALTY</span><span>Demolitions</span></div>
+        <div class="pf-row"><span class="pf-key">PREV UNIT</span><span>14th Drop Infantry Battalion</span></div>
+        <div class="pf-row"><span class="pf-key">LAST ACTION</span><span>Hellas Basin — near total squad loss</span></div>
+        <div class="pf-row"><span class="pf-key">STATUS</span><span style="color:#7ecfaa">Sole survivor. Cleared for redeployment.</span></div>
+        <div class="pf-note">NOTATION: "Candidate demonstrates exceptional resilience and continued operational enthusiasm."</div>
+      </div>
+      <p><em>Operational enthusiasm.</em> That was the part that stayed with me.</p>
+      <div class="scene-break">ESV MERIDIAN // HANGAR BAY 4 // T-MINUS 04 WEEKS</div>
+      <p>Rayes found me while I was running maintenance checks on Diana. I had the thruster housing open and my hands inside it when he appeared at my shoulder with two cups of coffee and the look he got when he had information he was still deciding how to present.</p>
+      <p>Sergeant First Class Aldric Rayes. Eleven years in the Drop Infantry. He was forty-one, built like someone had designed a man specifically for the purpose of surviving things that killed other men, and he had a voice that projected across a hangar bay without him ever raising it. I'd served with him for three drops before Mars. I knew his habits the way you know a person you've trusted your life to — not everything about them, but the parts that matter. He drank his coffee black and too hot. He read physical books, actual paper, kept in a sealed case under his bunk. He was hard on new personnel not because he disliked them but because he'd watched too many of them die from mistakes that experience would have prevented. And when he smiled — which was rare — it meant something had genuinely surprised him. Very little surprised Aldric Rayes.</p>
+      <p>He held out the second cup.</p>
+      <p>"We're getting a replacement," he said.</p>
+      <p>"For Carrow?" Carrow had been our demolitions specialist until a training accident three weeks prior took two fingers off his right hand and removed him from deployment. Not a combat injury, which made it worse somehow — not for Carrow, who seemed quietly relieved, but for the squad.</p>
+      <p>"For Carrow," Rayes confirmed. "Kid out of the 14th. Darro Fenn. Twenty-two."</p>
+      <p>"Hellas Basin?"</p>
+      <p>He nodded. The Hellas Basin engagement was in the briefings — a drop that had gone wrong in three ways simultaneously. Near-total squad loss. Fenn was the only one out. ESC reviewed him, cleared him, handed him back to the deployment pool.</p>
+      <p>"How's he look on paper?"</p>
+      <p>"Scores are fine. Demo, breaching, all the certifications. Psych review came back clean. Said he's got 'operational enthusiasm,' whatever the hell that's supposed to mean."</p>
+      <p>"That's not a phrase that comes from a good place."</p>
+      <p>"No," Rayes agreed. "It isn't." He drank his coffee. "He arrives Thursday. I want everyone there."</p>
+      <p>"You worried about him?"</p>
+      <p>"I'm worried about anyone who survived what he survived and came back asking for another drop," he said. "That's either very healthy or very broken and you can't always tell which from the outside."</p>
+      <div class="scene-break">ESV MERIDIAN // CHOW HALL // THURSDAY +1</div>
+      <p>He was shorter than I'd expected — compact, the kind of build that came from working in confined spaces, which made sense for demo. He set his tray down at the end of the table, looked around at all of us once, and said: "Thanks for the space."</p>
+      <p>Kess studied him from across the table. "You're the demo guy."</p>
+      <p>"Darro Fenn. Yeah."</p>
+      <p>"You any good?"</p>
+      <p>Fenn blinked. "I'm certified across all current ESC demolitions platforms. Breaching, controlled demolition, anti-armour —"</p>
+      <p>Kess leaned forward, his voice dropping. "Are you <em>good.</em>"</p>
+      <p>A pause. "Yeah," Fenn said. "I'm good."</p>
+      <p>Kess nodded and went back to his food.</p>
+      <p>"You excited?" Holt asked. She meant it genuinely.</p>
+      <p>"Yeah," Fenn said. "I am."</p>
+      <p>Kess looked at him for a long moment. "What's it feel like? Being excited about a drop. I'm trying to remember."</p>
+      <p>Fenn looked around the table. He was smart enough to understand that something was happening, and secure enough not to fold under it. "How many drops before it stops feeling like anything?" he asked. He actually wanted to know.</p>
+      <p>Nobody answered right away.</p>
+      <p>"Three," Kess said. "For me. Third one I just felt sick the whole way down. Thought something was wrong with me."</p>
+      <p>"The sick feeling doesn't go away," Holt said. "You just stop mistaking it for fear."</p>
+      <p>"What do you mistake it for?" Fenn asked.</p>
+      <p>"Just the drop," she said. "It's just the drop."</p>
+      <p>Fenn sat with that. Then he picked up his fork and started eating, and nobody made anything of it. He'd asked a real question and gotten real answers. The table decided that was worth something.</p>
+      <p>Later, when it was just Rayes and me and the last of the coffee, he said: "He'll be all right."</p>
+      <p>"You sound like you're convincing yourself."</p>
+      <p>"I'm not. I'm putting the good version on the record. Something to hold on to."</p>
+      <p>"And the bad version?"</p>
+      <p>"He survived Hellas Basin. That means he's either very skilled or very lucky or both. Lucky doesn't last. Skilled does, if you add experience to it." He set the cup down. "So we make sure he gets the experience before the luck runs out."</p>
+      <div class="scene-break">MARS SURFACE // PRESENT</div>
+      <p>I thought about that a lot in the weeks that followed. I thought about it falling through the atmosphere. I thought about it when Rayes' voice came across the comms one last time and then didn't. When I looked right and watched what was left of his pod spinning away through the green haze.</p>
+      <p>He'd been trying to make sure the luck didn't run out. Right up until his did.</p>
+      <p>I crouched over Fenn and pulled the dog tags from around his neck.</p>
+      <p>The chain was still warm. It shouldn't have been, in this air, but it was. I held them for a moment without reading them — I didn't need to. I already knew his name. I'd read the file. I'd sat across from him at that table and watched him decide we were worth trusting.</p>
+      <p>I closed my fist around the tags and stood up.</p>
+      <div class="scene-break">BLACKTHORN RELAY // 11.2 KM NORTHEAST</div>
+      <p>Solis pulled up the overlay on her forearm display, fingers already moving. "Relay station. Eleven klicks northeast, designated Blackthorn. Primary signal hub for the 3rd Separatist grid — they're routing encrypted comms through it to coordinate across three sectors. If it's still transmitting in under four hours, the ESC eastern operation loses its blackout window."</p>
+      <div class="hud-callout">
+        <div class="hud-row"><span class="hud-key">TARGET</span><span>BLACKTHORN RELAY // 3RD SEPARATIST GRID</span></div>
+        <div class="hud-row"><span class="hud-key">DISTANCE</span><span>11.0 km NE</span></div>
+        <div class="hud-row"><span class="hud-key">TIME REMAINING</span><span style="color:#c94040">03:47:00</span></div>
+        <div class="hud-row"><span class="hud-key">DEMO SPECIALIST</span><span style="color:#c94040">KIA</span></div>
+      </div>
+      <p>"We need to move," Vega said. Not an order. An acknowledgement.</p>
+      <p>I pocketed the tags. "Sitrep."</p>
+      <p>Kess stared at the empty spot where Fenn's body had been. "We were supposed to have a demolitions specialist."</p>
+      <p>"We have breaching charges in the standard kit," Vega said. "Enough to drop the tower. It'll be slower without Fenn." He looked at me. "You've run controlled demolitions before."</p>
+      <p>"Once. On Titan."</p>
+      <p>"Once more than the rest of us." He unslung his rifle. "Let's go."</p>
+      <p>The canyon shelf ran northeast — a natural fault line, pressure-stable, walls six to eight metres high cutting off the wind. The best route available. Eleven kilometres of Mars, which is never a short walk.</p>
+      <p>After twenty minutes, Kess broke it. "He told me he was nervous," he said. "The night before the drop. He came and found me in the hangar bay while I was doing kit checks. Said he wasn't scared of the drop itself — the physics didn't bother him. He was scared of the moment after. Of being on the ground and not knowing if he'd be good enough." Kess paused. "I told him that was the only feeling that meant you were going to be all right."</p>
+      <p>"That's true," Holt said.</p>
+      <p>"I know it's true," Kess said. "I just wish he'd had the chance to find out."</p>
+      <p>Solis spoke without looking up from her display. "I had him on my sector check during landing. Helmet status sweep. I was running the frequency scan at the same time and I… I moved past him."</p>
+      <p>"I moved past him." The finality in it closed the subject. "I'm not looking for anything. I'm saying it because it's true and true things should be said."</p>
+      <p>A pause. Then Vega, from the front: "Rayes used to say that."</p>
+      <p>A different silence. Heavier.</p>
+      <p>"I know," Solis said. "I picked it up from him."</p>
+      <p>We'd lost Rayes in the drop and none of us had found a way to discuss it yet. He was still too present — too many of our habits, our rhythms, our phrases had come from him. You can't feel the absence of something until you've stopped feeling its presence, and we hadn't stopped yet.</p>
+      <p>I thought about Rayes in a hangar bay with two cups of coffee, talking about luck. I thought about Fenn picking up his fork at a table full of strangers, deciding they were worth something. I thought about dog tags in my chest pocket, still slightly too warm.</p>
+      <p>"I'll get it done," I said.</p>
+      <p>Vega held my gaze for a moment, then nodded. That was the end of the conversation and the beginning of everything else.</p>
+      <p>The canyon opened ahead and the relay station rose out of the pale basin — angular, fortified, its signal tower blinking red against the thin green sky. Steady. Indifferent. Broadcasting everything the Separatists needed, right up until the moment we stopped it.</p>
+      <p>We had three hours and twenty-two minutes.</p>
+      <p>We moved out of the canyon and didn't look back.</p>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-btn" onclick="switchChapter('ch1')">← Chapter 1</button>
+      <div class="reading-progress">CH 2 / 2</div>
+      <button class="nav-btn" disabled>Next →</button>
+    </div>
+  </div>
+
+</div>
+<script>
+function switchChapter(id) {
+  document.querySelectorAll('.chapter').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.ch-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const idx = ['ch0','ch1','ch2'].indexOf(id);
+  document.querySelectorAll('.ch-tab')[idx].classList.add('active');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+</script>
+</body>
+</html>
